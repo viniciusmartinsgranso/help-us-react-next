@@ -7,4 +7,8 @@ export namespace CustomValidators {
   export function isValidPassword(password: string): boolean {
     return <boolean>password && password.trim().length >= 6;
   }
+
+  export function isEqualStrings(first: string, second: string): boolean {
+    return first === second;
+  }
 }
