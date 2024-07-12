@@ -3,9 +3,13 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import styles from "./page.module.css"
 import Image from "next/image";
-import { CustomValidators } from "@/app/utils/functions";
+import { CustomValidators } from "../../../public/utils/functions";
 import isValidEmail = CustomValidators.isValidEmail;
 import isValidPassword = CustomValidators.isValidPassword;
+import { userService } from "../../../public/services/user.service";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { UserProxy } from "../../../public/models/proxies/user.proxy";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,35 +20,42 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const invitedUser: UserProxy = {
+    id: self.crypto.randomUUID(),
+    email: '',
+    updatedAt: new Date(),
+    city: '',
+    name: 'Invited',
+    createdAt: new Date(),
+  };
+
   function handleLogin() {
-    console.log(user);
-    // if (user.email && user.password) {
-    //   localStorage.setItem('loggedUser', JSON.stringify(user));
-    //   router.push('/home');
-    // }
+    if (userService.login(user)) {
+      toast.success('Login successfull');
+      router.push('/home');
+    }
+    else
+      toast.error('Login failed');
+  }
+
+  function handleInviteUser() {
+    userService.invitedUser(invitedUser);
+    router.push('/home')
   }
 
   function goToRegister(): void {
-    console.log('register')
+    router.push('/register');
   }
 
   function canLogin(): boolean {
     return isValidEmail(user.email) && isValidPassword(user.password);
   }
 
-  const h1Style = {
-    fontSize: '1.3rem',
-    color: 'white',
-  }
-
-  const white = {
-    color: 'white'
-  }
-
   return (
     <div className={ styles.login }>
+      <ToastContainer />
       <Image src="/images/logo.svg" alt="Logo" width={ 140 } height={ 120 }/>
-      <h1 style={ h1Style }>Entre com sua conta</h1>
+      <h1 style={{ color: "white", fontSize: '1.3rem' }}>Entre com sua conta</h1>
 
       <div className={ styles.fields }>
         <div className={ styles.form }>
@@ -69,7 +80,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <span style={ white } onClick={ goToRegister }>Registrar-se</span>
+        <span style={{ color: "white" }} onClick={ goToRegister }>Registrar-se</span>
       </div>
 
       <button onClick={ handleLogin }
@@ -79,9 +90,11 @@ export default function LoginPage() {
 
       <div className={ styles.or }>
         <Image src="images/line.svg" width={ 140 } height={ 10 } alt=""/>
-          <label style={ white }>ou</label>
+          <label style={{ color: "white" }}>ou</label>
         <Image src="images/line.svg" width={ 140 } height={ 10 } alt=""/>
       </div>
+
+      <button className={ styles.invited } onClick={ handleInviteUser }>Entrar como convidado</button>
 
     </div>
   );
